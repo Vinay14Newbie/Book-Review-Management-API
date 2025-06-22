@@ -66,7 +66,6 @@ export const getBooks = async (req, res) => {
 export const addReview = async (req, res) => {
   try {
     const { id: bookId } = req.params;
-    console.log('id ', bookId);
     const book = await Book.findById(bookId);
     if (!book) {
       throw {
@@ -81,8 +80,43 @@ export const addReview = async (req, res) => {
       comment: req.body.comment,
       rating: req.body.rating
     });
-    res.status(201).json(newReview);
+    res.status(201).json({
+      status: true,
+      data: newReview,
+      message: 'Book review added successfully'
+    });
   } catch (err) {
+    console.log('Error found while adding review');
+    return res.status(500).json({
+      status: false,
+      message: 'Internal error'
+    });
+  }
+};
+
+export const getReviews = async (req, res) => {
+  try {
+    const { id: bookId } = req.params;
+    const book = await Book.findById(bookId);
+    if (!book) {
+      throw {
+        status: 404,
+        message: 'Book not found'
+      };
+    }
+
+    const { page = 1, limit = 10 } = req.query;
+
+    const reviews = await Review.find({ bookId })
+      .skip((page - 1) * limit)
+      .limit(Number(limit));
+
+    return res.status(200).json({
+      status: true,
+      data: reviews,
+      message: 'Book reviews fetched successfully'
+    });
+  } catch (error) {
     console.log('Error found while adding review');
     return res.status(500).json({
       status: false,
