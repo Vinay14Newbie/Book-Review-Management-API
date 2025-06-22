@@ -62,3 +62,31 @@ export const getBooks = async (req, res) => {
     });
   }
 };
+
+export const addReview = async (req, res) => {
+  try {
+    const { id: bookId } = req.params;
+    console.log('id ', bookId);
+    const book = await Book.findById(bookId);
+    if (!book) {
+      throw {
+        status: 404, // 404- not found
+        message: 'Book not found'
+      };
+    }
+
+    const newReview = await Review.create({
+      bookId,
+      reviewer: req.body.reviewer,
+      comment: req.body.comment,
+      rating: req.body.rating
+    });
+    res.status(201).json(newReview);
+  } catch (err) {
+    console.log('Error found while adding review');
+    return res.status(500).json({
+      status: false,
+      message: 'Internal error'
+    });
+  }
+};
